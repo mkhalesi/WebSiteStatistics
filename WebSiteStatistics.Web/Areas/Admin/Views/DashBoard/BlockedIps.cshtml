@@ -1,0 +1,165 @@
+﻿
+@using WebSiteStatistics.DataLayer.DTOs.Stattistics
+@model List<BlockedIpDTO>
+
+@{
+    ViewData["Title"] = "BlockedIp";
+    Layout = "~/Areas/Admin/Views/Shared/_WebStatisticsLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="box">
+            <div class="box-header">
+                <span>
+                    <span class="imgleft fa fa-table" aria-hidden="true"></span>
+                    آدرس آی پی هایی که نباید مورد پردازش قرار بگیرند
+                </span>
+            </div>
+            <div class="box-content">
+                <div class="margin10">
+                    <div class="form-group">
+                        <label for="ipAddress">آدرس آی پی</label>
+                        <input type="text" class="form-control" name="IpAddress" id="IpAddress">
+                        <button onclick="AddBlockIp()" class="btn btn-primary">افزودن آدرس آی پی جدید</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                        <caption>
+                            <div class="alert alert-danger alert-dismissable">
+                                <span class="fa fa-bolt"></span>
+                                <strong>توجه داشته باشید!</strong>
+                                با افزودن شماره آی پی ها به این لیست مانع از شمارش آنها در آمار خواهید شد.
+
+                            </div>
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th>
+                                    آدرس آی پی
+                                </th>
+                                <th>دستورات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="label label-warning">
+                                            @item.IpAddress
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button onclick="DeleteBlockIp('@item.Id')" class="btn btn-danger btn-sm">حذف آی پی </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts {
+    <script src="~/Sweetalert2/sweetalert2.min.js"></script>
+    <link href="~/Sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <script src="~/AdminTemplate/app-assets/vendors/js/core/jquery-3.3.1.min.js"></script>
+    <script>
+        function AddBlockIp() {
+
+            var data = new FormData();
+            data.append("ipAddress", $("#IpAddress").val());
+
+            var ajaxRequest = $.ajax({
+                type: "POST",
+                url: "/Admin/Statistics/AddIp",
+                contentType: false,
+                processData: false,
+                data: data,
+                success: function (data) {
+                    if (data.isSuccess == true) {
+                        swal.fire(
+                            'موفق!',
+                            data.message,
+                            'success'
+                        ).then(function (isConfirm) {
+                            window.location.href = "/admin/Statistics/BlockeIps";
+                        });
+                    }
+                    else {
+                        swal.fire(
+                            'هشدار!',
+                            data.message,
+                            'warning'
+                        );
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert(xhr.status);
+                    alert(thrownError);
+                }
+
+            });
+
+            ajaxRequest.done(function (xhr, textStatus) {
+                // Do other operation
+            });
+            // });
+        }
+
+        function DeleteBlockIp(Id) {
+            swal.fire({
+                title: 'حذف آی پی',
+                text: "کاربر گرامی از حذف آی پی مطمئن هستید؟",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#7cacbe',
+                confirmButtonText: 'بله ، حذف شود',
+                cancelButtonText: 'خیر'
+            }).then((result) => {
+                if (result.value) {
+                    var postData = {
+                        'Id': Id,
+                    };
+
+                    $.ajax({
+                        contentType: 'application/x-www-form-urlencoded',
+                        dataType: 'json',
+                        type: "POST",
+                        url: "/Admin/Statistics/DeleteIp",
+                        data: postData,
+                        success: function (data) {
+                            if (data.isSuccess == true) {
+                                swal.fire(
+                                    'موفق!',
+                                    data.message,
+                                    'success'
+                                ).then(function (isConfirm) {
+                                    window.location.href = "/Admin/Statistics/BlockeIps";
+                                });
+                            }
+                            else {
+                                swal.fire(
+                                    'هشدار!',
+                                    data.message,
+                                    'warning'
+                                );
+                            }
+                      item },
+                        error: function (request, status, error) {
+                            alert(request.responseText);
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+
+}
+
