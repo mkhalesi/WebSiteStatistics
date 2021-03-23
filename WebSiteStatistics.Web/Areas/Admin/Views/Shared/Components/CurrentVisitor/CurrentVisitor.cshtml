@@ -1,0 +1,30 @@
+﻿
+@using WebSiteStatistics.DataLayer.DTOs.Stattistics
+
+@{
+    Layout = null;
+    var currentVisitor = ViewBag.currentVisitor as CurrentVisitorDTO;
+}
+
+<div class="box">
+    <div class="box-header">
+        <span>
+            <span class="imgleft fa fa-user" aria-hidden="true"></span>
+            مشخصات شما
+        </span>
+    </div>
+    <div class="box-content">
+        <ul class="list-group">
+            <li class="list-group-item">
+                @currentVisitor.Browser<span class="pull-left fa fa-globe" aria-hidden="true"></span>
+            </li>
+            <li class="list-group-item">
+                @currentVisitor.IpAddress<span class="pull-left fa fa-server" aria-hidden="true"></span>
+            </li>
+            <li class="list-group-item">
+                @currentVisitor.OsName<span class="pull-left fa fa-windows" aria-hidden="true"></span>
+            </li>
+        </ul>
+    </div>
+</div>
+

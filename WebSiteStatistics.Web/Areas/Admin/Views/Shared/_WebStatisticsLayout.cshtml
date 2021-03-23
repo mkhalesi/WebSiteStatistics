@@ -1,0 +1,73 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Admin</title>
+    <link rel="shortcut icon" href="~/Images/mkhalesiorg.png" type="image/png">
+    <link href="~/WebStatistics/Site.css" rel="stylesheet" />
+    <link href="~/WebStatistics/bootstrap.css" rel="stylesheet" />
+    <link href="~/WebStatistics/bootstrap-theme.css" rel="stylesheet" />
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="~/WebStatistics/Scripts/modernizr-2.6.2.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+
+                <div class="box">
+                    <div class="box-header">
+                        <span>
+                            <span class="imgleft fa fa-navicon" aria-hidden="true"></span>
+                            منوی سایت
+                        </span>
+
+                    </div>
+                    <div class="box-content">
+                        <div class="list-group">
+                            <a href="~/Admin/Statistics/Index" class="list-group-item">صفحه اصلی<span class="pull-left fa fa-home" aria-hidden="true"></span></a>
+                            <a href="~/Admin/Statistics/Download" class="list-group-item">دانلود ها<span class="pull-left fa fa-download" aria-hidden="true"></span></a>
+                            <a href="~/Admin/Statistics/BlockeIps" class="list-group-item">تنظیمات<span class="pull-left fa fa-cogs" aria-hidden="true"></span></a>
+                            <a href="/" class="btn btn-success btn-sm btn-block mb-2">
+                                <i class="ft-circle ml-2"></i>
+                                <span>مشاهده سایت</span>
+                            </a>
+                            <a href="/Admin/Dashboard" class="btn btn-sm btn-warning btn-block mb-2">
+                                <i class="fa-user-secret ml-2"></i>
+                                <span>مشاهده پنل ادمین</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                @await Component.InvokeAsync("CurrentVisitor")
+                @await Component.InvokeAsync("SubDetails")
+            </div>
+            <div class="col-md-10">
+
+                @RenderBody()
+
+            </div>
+        </div>
+    </div>
+
+    <footer class="navbar-default navbar-fixed-bottom footer">
+        <div class="container-fluid">
+            <div class="col-md-12 top10 text-center">
+                <p class="clearfix text-muted text-center px-2"><span> &copy; 2021  کپی رایت <a href="https://mkhalesi.ir" id="pixinventLink" target="_blank" class="text-bold-800 primary darken-2"> محمد خالصی </a>,تمام حقوق محفوظ است </span></p>
+            </div>
+        </div>
+    </footer>
+    <script src="~/WebStatistics/Scripts/jquery-3.1.0.min.js"></script>
+    <script src="~/WebStatistics/Scripts/noty/packaged/jquery.noty.packaged.min.js"></script>
+    <script src="~/WebStatistics/Scripts/jquery.signalR-2.2.1.js"></script>
+    @*<script type="text/javascript" src="~/signalr/hubs"></script>*@
+    <script src="~/WebStatistics/Scripts/bootstrap.js"></script>
+    <script src="~/WebStatistics/Scripts/canvasjs.min.js"></script>
+
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>
