@@ -42,5 +42,17 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         Task<List<PageViewDTO>> GetPageViewDetails();
         #endregion
 
+        #region add ip to BlockedIp 
+        Task AddIpToBlockedIp(string ipAddress);
+        #endregion
+
+        #region delete ip from BlockedIp
+        Task DeleteBlockedIp(long blockedId);
+        #endregion
+
+        #region get all BlockedIp
+        Task<List<BlockedIpDTO>> GetAllBlockedIp();
+        #endregion
+
     }
 }

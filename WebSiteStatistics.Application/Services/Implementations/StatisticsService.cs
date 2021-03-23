@@ -277,6 +277,50 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         }
         #endregion
 
+
+        #region add ip to BlockedIp 
+        public async Task AddIpToBlockedIp(string ipAddress)
+        {
+            if (!string.IsNullOrEmpty(ipAddress) && !string.IsNullOrWhiteSpace(ipAddress))
+            {
+                var blockIp = new BlockedIp()
+                {
+                    IpAddress = ipAddress,
+                };
+                await blockedIpRepository.AddEntity(blockIp);
+                await blockedIpRepository.SaveChanges();
+            }
+        }
+        #endregion
+
+        #region delete ip from BlockedIp
+        public async Task DeleteBlockedIp(long blockedId)
+        {
+            var blockIp = blockedIpRepository.GetQuery().AsQueryable()
+                .Where(p => p.Id == blockedId && !p.IsDelete).FirstOrDefault();
+            if (blockIp != null)
+            {
+                blockIp.IsDelete = true;
+                await blockedIpRepository.SaveChanges();
+            }
+        }
+        #endregion
+
+        #region get all BlockedIp
+        public async Task<List<BlockedIpDTO>> GetAllBlockedIp()
+        {
+            var blockedips = await blockedIpRepository.GetQuery().AsNoTracking()
+            .Where(p => !p.IsDelete)
+            .Select(p => new BlockedIpDTO
+            {
+                Id = p.Id,
+                IpAddress = p.IpAddress,
+            })
+            .ToListAsync();
+            return blockedips;
+        }
+        #endregion
+
         #region Normalize Page Name
         private string NormalizePageName(string PageName)
         {
