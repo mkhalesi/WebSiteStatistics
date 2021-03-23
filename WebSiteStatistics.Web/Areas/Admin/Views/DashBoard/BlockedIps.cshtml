@@ -132,16 +132,16 @@
                         contentType: 'application/x-www-form-urlencoded',
                         dataType: 'json',
                         type: "POST",
-                        url: "/Admin/Statistics/DeleteIp",
+                        url: "/Admin/Dashboard/DeleteBlockedIp",
                         data: postData,
                         success: function (data) {
-                            if (data.isSuccess == true) {
+                            if (data == true) {
                                 swal.fire(
                                     'موفق!',
                                     data.message,
                                     'success'
                                 ).then(function (isConfirm) {
-                                    window.location.href = "/Admin/Statistics/BlockeIps";
+                                    window.location.href = "/admin/Dashboard/BlockedIps";
                                 });
                             }
                             else {
@@ -151,7 +151,7 @@
                                     'warning'
                                 );
                             }
-                      item },
+                        },
                         error: function (request, status, error) {
                             alert(request.responseText);
                         }

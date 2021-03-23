@@ -41,13 +41,16 @@ namespace WebSiteStatistics.Web.Areas.Admin.Controllers
         }
         #endregion
 
+        #region blocked Ip Index
         [HttpGet]
         public async Task<IActionResult> BlockedIps()
         {
             var blockedIps = await statisticsService.GetAllBlockedIp();
             return View(blockedIps);
         }
+        #endregion
 
+        #region add ip to Blocked Ip
         [HttpPost]
         public async Task<JsonResult> AddIpToBlockedIp(string IpAddress)
         {
@@ -55,7 +58,17 @@ namespace WebSiteStatistics.Web.Areas.Admin.Controllers
             if (result == false) return null;
             return Json(result);
         }
+        #endregion
 
+        #region delete blocked ip
+        [HttpPost]
+        public async Task<JsonResult> DeleteBlockedIp(long Id)
+        {
+            var result = await statisticsService.DeleteBlockedIp(Id);
+            if (result == false) return null;
+            return Json(result);
+        }
+        #endregion
 
     }
 }
