@@ -41,11 +41,21 @@ namespace WebSiteStatistics.Web.Areas.Admin.Controllers
         }
         #endregion
 
+        [HttpGet]
         public async Task<IActionResult> BlockedIps()
         {
             var blockedIps = await statisticsService.GetAllBlockedIp();
             return View(blockedIps);
         }
+
+        [HttpPost]
+        public async Task<JsonResult> AddIpToBlockedIp(string IpAddress)
+        {
+            var result = await statisticsService.AddIpToBlockedIp(IpAddress);
+            if (result == false) return null;
+            return Json(result);
+        }
+
 
     }
 }

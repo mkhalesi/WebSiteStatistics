@@ -279,7 +279,7 @@ namespace WebSiteStatistics.Application.Services.Interfaces
 
 
         #region add ip to BlockedIp 
-        public async Task AddIpToBlockedIp(string ipAddress)
+        public async Task<bool> AddIpToBlockedIp(string ipAddress)
         {
             if (!string.IsNullOrEmpty(ipAddress) && !string.IsNullOrWhiteSpace(ipAddress))
             {
@@ -289,12 +289,14 @@ namespace WebSiteStatistics.Application.Services.Interfaces
                 };
                 await blockedIpRepository.AddEntity(blockIp);
                 await blockedIpRepository.SaveChanges();
+                return true;
             }
+            return false;
         }
         #endregion
 
         #region delete ip from BlockedIp
-        public async Task DeleteBlockedIp(long blockedId)
+        public async Task<bool> DeleteBlockedIp(long blockedId)
         {
             var blockIp = blockedIpRepository.GetQuery().AsQueryable()
                 .Where(p => p.Id == blockedId && !p.IsDelete).FirstOrDefault();
@@ -302,7 +304,9 @@ namespace WebSiteStatistics.Application.Services.Interfaces
             {
                 blockIp.IsDelete = true;
                 await blockedIpRepository.SaveChanges();
+                return true;
             }
+            return false;
         }
         #endregion
 

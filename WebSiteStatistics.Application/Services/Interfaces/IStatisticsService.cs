@@ -43,11 +43,11 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         #endregion
 
         #region add ip to BlockedIp 
-        Task AddIpToBlockedIp(string ipAddress);
+        Task<bool> AddIpToBlockedIp(string ipAddress);
         #endregion
 
         #region delete ip from BlockedIp
-        Task DeleteBlockedIp(long blockedId);
+        Task<bool> DeleteBlockedIp(long blockedId);
         #endregion
 
         #region get all BlockedIp
