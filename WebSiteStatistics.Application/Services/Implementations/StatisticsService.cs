@@ -11,6 +11,10 @@ using WebSiteStatistics.DataLayer.DTOs.Stattistics;
 using WebSiteStatistics.DataLayer.Entities.Statistics;
 using WebSiteStatistics.DataLayer.Repository;
 using WebSiteStatistics.Application.Utilities.Date;
+using System.Xml;
+using System.Net.Http;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace WebSiteStatistics.Application.Services.Interfaces
 {
@@ -21,26 +25,34 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         private IGenericRepository<BlockedIp> blockedIpRepository;
         private IGenericRepository<Country> countryRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<StatisticsService> _logger;
+        private readonly HttpClient _httpClient;
         public StatisticsService(IHttpContextAccessor httpContextAccessor,
             IGenericRepository<Statistics> statisticsRepository,
             IGenericRepository<BlockedIp> blockedIpRepository,
-            IGenericRepository<Country> countryRepository)
+            IGenericRepository<Country> countryRepository,
+            ILogger<StatisticsService> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             this.statisticsRepository = statisticsRepository;
             this.blockedIpRepository = blockedIpRepository;
             this.countryRepository = countryRepository;
+            _httpClient = new HttpClient()
+            {
+                Timeout = TimeSpan.FromSeconds(5)
+            };
+            _logger = logger;
         }
         #endregion
 
         #region add user to Statistic Entity
-        public void AddUserToStatistic(string ip)
+        public async Task AddUserToStatistic(string ip)
         {
-            var blockedIP = blockedIpRepository.GetQuery().AsQueryable()
-                 .AsNoTracking().ToList();
-
             var httpContext = _httpContextAccessor.HttpContext;
-            if (!blockedIP.Where(p => !p.IsDelete).Any(ip => ip.IpAddress.Equals(GetIPAddress())))
+            var blockedIP =  blockedIpRepository.GetQuery().AsQueryable()
+                .Where(p => !p.IsDelete).ToList();
+
+            if (!blockedIP.Any(ip => ip.IpAddress.Equals(GetIPAddress())))
             {
                 var statistic = new Statistics();
                 statistic.IpAddress = GetIPAddress();
@@ -49,18 +61,18 @@ namespace WebSiteStatistics.Application.Services.Interfaces
                 statistic.Referer = httpContext.Request.Headers["Referer"].ToString() ?? "Direct";
                 statistic.UserAgent = httpContext.Request.Headers["User-Agent"].ToString();
                 statistic.DateStamp = DateTime.Now;
-
-                statisticsRepository.AddEntity(statistic);
-                statisticsRepository.SaveChanges();
+          
+                await statisticsRepository.AddEntity(statistic);
+                await statisticsRepository.SaveChanges();
+                await GetLocation();
 
                 #region Get Country Visitors
-                //Get Country Visitors
-                // my ipStack Website Details = access_key = 74c3142e849d032aa8238f174421a424
-                // https://ipstack.com/quickstart get access_key
+                // Get Country Visitors
+                //my ipStack Website Details = access_key = 74c3142e849d032aa8238f174421a424
+                //https://ipstack.com/quickstart get access_key
 
                 //XmlDocument xdoc = new XmlDocument();
                 //xdoc.LoadXml("https://api.ipstack.com/" + GetIPAddress() + "?access_key=74c3142e849d032aa8238f174421a424");
-                //  var country = 
                 //var country = xdoc.Descendants("Response").Select(c => new
                 //{
                 //    IpAddress = c.Element("IP")?.Value,
@@ -77,15 +89,18 @@ namespace WebSiteStatistics.Application.Services.Interfaces
                 //});
 
                 //var countryData = country.FirstChild();
+
                 ////Check If The Country Is already in database or not
-                //var countries = _context.Country.Any(c => c.CountryCode.Equals(countryData.CountryCode));
+                //var countries = countryRepository
+                //    .GetQuery().Any(c => c.CountryCode.Equals(countryData.CountryCode));
+
                 //if (countries)
                 //{
                 //    //then Update the ViewCount
-                //    Country currentCountry =
-                //        _context.Country.First(cc => cc.CountryCode.Equals(countryData.CountryCode));
+                //    Country currentCountry = countryRepository.GetQuery()
+                //        .First(cc => cc.CountryCode.Equals(countryData.CountryCode));
                 //    currentCountry.ViewCount++;
-                //    _context.SaveChanges();
+                //    await countryRepository.SaveChanges();
                 //}
                 //else
                 //{
@@ -98,12 +113,83 @@ namespace WebSiteStatistics.Application.Services.Interfaces
                 //        Longitude = countryData.Longitude,
                 //        ViewCount = 1
                 //    };
-                //    _context.Country.Add(newCountry);
-                //    _context.SaveChanges();
+                //    await countryRepository.AddEntity(newCountry);
+                //    await countryRepository.SaveChanges();
                 //}
                 #endregion
             }
         }
+
+        #region freeGeoip
+        public async Task<GeoInfo> GetLocation()
+        {
+            // GetIPAddress()
+            var response = await _httpClient.GetAsync("http://api.ipstack.com/" + "31.58.171.206" + "?access_key=74c3142e849d032aa8238f174421a424");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var jsonDeserialize =  JsonConvert.DeserializeObject<GeoInfo>(json);
+
+                var countries = countryRepository.GetQuery().AsQueryable()
+                    .Any(c => c.CountryCode.Equals(jsonDeserialize.CountryCode));
+
+                if (countries)
+                {
+                    //then Update the ViewCount
+                    Country currentCountry = countryRepository.GetQuery()
+                        .First(cc => cc.CountryCode.Equals(jsonDeserialize.CountryCode));
+                    currentCountry.ViewCount++;
+                    await countryRepository.SaveChanges();
+                }
+                else
+                {
+                    //then add this Country To Database
+                    var newCountry = new Country()
+                    {
+                        CountryCode = jsonDeserialize.CountryCode,
+                        CountryName = jsonDeserialize.CountryName,
+                        Latitude = jsonDeserialize.Latitude,
+                        Longitude = jsonDeserialize.Longitude,
+                        City = jsonDeserialize.City,
+                        RegionName = jsonDeserialize.RegionName,
+                        RegionCode = jsonDeserialize.RegionCode,
+                        ViewCount = 1
+                    };
+                    await countryRepository.AddEntity(newCountry);
+                    await countryRepository.SaveChanges();
+                }
+                return jsonDeserialize;
+            }
+            return null;
+        }
+        public class GeoInfo
+        {
+            [JsonProperty("country_code")]
+            public string CountryCode { get; set; }
+
+            [JsonProperty("country_name")]
+            public string CountryName { get; set; }
+
+            [JsonProperty("region_code")]
+            public string RegionCode { get; set; }
+
+            [JsonProperty("region_name")]
+            public string RegionName { get; set; }
+
+            [JsonProperty("city")]
+            public string City { get; set; }
+
+            [JsonProperty("zip_code")]
+            public string ZipCode { get; set; }
+
+            [JsonProperty("latitude")]
+            public string Latitude { get; set; }
+
+            [JsonProperty("longitude")]
+            public string Longitude { get; set; }
+        }
+        #endregion
+
         private static string GetUserOS(string userAgent)
         {
             // get a parser with the embedded regex patterns
@@ -170,6 +256,7 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         }
         #endregion
 
+
         #region get Statistics for home
         public async Task<StatisticsDTO> GetStatisticsDetails()
         {
@@ -177,6 +264,7 @@ namespace WebSiteStatistics.Application.Services.Interfaces
                 .ToListAsync();
             StatisticsDTO svm = new StatisticsDTO()
             {
+                //Online Users Can't Work on Localhost
                 OnlineUsers = (int)_httpContextAccessor.HttpContext.User.Identities.Count(),
                 TodayVisits = stat.Count(ss => ss.DateStamp.Day == DateTime.Now.Day),
                 TotallVisits = stat.Count,
@@ -298,8 +386,8 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         #region delete ip from BlockedIp
         public async Task<bool> DeleteBlockedIp(long blockedId)
         {
-            var blockIp = blockedIpRepository.GetQuery().AsQueryable()
-                .Where(p => p.Id == blockedId && !p.IsDelete).FirstOrDefault();
+            var blockIp = await blockedIpRepository.GetQuery().AsQueryable()
+                .Where(p => p.Id == blockedId && !p.IsDelete).FirstOrDefaultAsync();
             if (blockIp != null)
             {
                 blockIp.IsDelete = true;

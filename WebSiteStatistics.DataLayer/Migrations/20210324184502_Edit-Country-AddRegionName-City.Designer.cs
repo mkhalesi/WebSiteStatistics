@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebSiteStatistics.DataLayer.Context;
 
 namespace WebSiteStatistics.DataLayer.Migrations
 {
     [DbContext(typeof(WebSiteStatisticsDbContext))]
-    partial class WebSiteStatisticsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210324184502_Edit-Country-AddRegionName-City")]
+    partial class EditCountryAddRegionNameCity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

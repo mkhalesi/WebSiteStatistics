@@ -10,7 +10,7 @@ namespace WebSiteStatistics.Application.Services.Interfaces
     public interface IStatisticsService : IAsyncDisposable
     {
         #region Add User to Statistic Entity
-        void AddUserToStatistic(string ip);
+        Task AddUserToStatistic(string ip);
         #endregion
 
         #region get Current Visitor
