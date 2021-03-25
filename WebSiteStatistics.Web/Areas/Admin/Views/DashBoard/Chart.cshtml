@@ -1,0 +1,201 @@
+﻿
+
+@{
+    ViewData["Title"] = "Home";
+    Layout = "~/Areas/Admin/Views/Shared/_WebStatisticsLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="box">
+            <div class="box-header">
+                <span>
+                    <span class="imgleft fa fa-bar-chart" aria-hidden="true"></span>
+                    نمایش آمار بازدیدها به تفکیک سیستم عامل
+                </span>
+            </div>
+            <div class="box-content">
+
+                <canvas id="myPIEChart" width="250" height="250"></canvas>
+
+                @*<div id="UserOs" style="height: 250px"></div>
+                    <canvas id="myChart" width="400" height="400"></canvas>*@
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+
+        <div class="box">
+            <div class="box-header">
+                <span>
+                    <span class="imgleft fa fa-bar-chart" aria-hidden="true"></span>
+                    نمایش آمار بازدیدها به تفکیک مرورگرها
+                </span>
+
+            </div>
+            <div class="box-content">
+                <canvas id="myPolarAreaChart" width="250" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="row">
+    <div class="col-md-12">
+
+        <div class="box">
+            <div class="box-header">
+                <span>
+                    <span class="imgleft fa fa-bar-chart" aria-hidden="true"></span>
+                    نمایش آمار بازدیدها به تفکیک کشور روی نمودار
+                </span>
+
+            </div>
+            <div class="box-content">
+                <div id="barCountry" style="height: 250px;"></div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+@section scripts {
+    <script src="~/WebStatistics/Scripts/morris/morris.js"></script>
+    <script src="~/WebStatistics/Scripts/raphael/raphael-min.js"></script>
+    <script src="~/WebStatistics/Scripts/jquery.signalR-2.2.1.js"></script>
+    <script src="~/WebStatistics/Scripts/modernizr-2.6.2.js"></script>
+    <script src="~/WebStatistics/Scripts/canvasjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+
+    <script>
+        $(document).ready(function () {
+
+               // Initialize Pie Chart For USer Browser Data
+            var databrowser = new Array();
+            $.getJSON('/Admin/Dashboard/RequestUserBrowserData/', function (data) {
+                $.each(data, function (i, item) {
+                    databrowser.push({ label: item.label, data: item.data });
+                });
+                var labelsPolarAreaArray = new Array();
+                var dataPolarAreaArray = new Array();
+                for (var i = 0; i < databrowser.length; i++) {
+                    labelsPolarAreaArray.push(databrowser[i].label);
+                    dataPolarAreaArray.push(databrowser[i].data);
+                }
+                console.log(databrowser);
+                console.log(dataPolarAreaArray);
+                var ctxPolarArea = document.getElementById('myPolarAreaChart').getContext('2d');
+                var myPolarAreaChart = new Chart(ctxPolarArea, {
+                    type: 'polarArea',
+                    data: {
+                        labels: labelsPolarAreaArray,
+                        datasets: [{
+                            label: '# of Votes',
+                            data: dataPolarAreaArray,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            });
+
+            // Initialize Pie Chart For UserOS Data
+            $.getJSON('/Admin/Dashboard/RequestUserOsData', function (data) {
+                var data6 = new Array();
+                $.each(data, function (i, item) {
+                    data6.push({ label: item.label, data: item.data });
+                });
+                var labelsPIEArray = new Array();
+                var dataPIEArray = new Array();
+                for (var i = 0; i < data6.length; i++) {
+                    labelsPIEArray.push(data6[i].label);
+                    dataPIEArray.push(data6[i].data);
+                }
+                var ctxPie = document.getElementById('myPIEChart').getContext('2d');
+                var myPIEChart = new Chart(ctxPie, {
+                    type: 'pie',
+                    data: {
+                        labels: labelsPIEArray,
+                        datasets: [{
+                            label: '# of Votes',
+                            data: dataPIEArray,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            });
+
+            // * Initialize Pie Chart
+            //var dataCountry = new Array();
+            //$.getJSON('/Home/RequestVisitorsCountryData/', function (data) {
+            //    $.each(data, function (i, item) {
+            //        dataCountry.push({ y: item.y, a: item.a });
+            //    });
+            //    Morris.Bar({
+            //        element: 'barCountry',
+            //        data: dataCountry,
+            //        xkey: 'y',
+            //        ykeys: ['a'],
+            //        labels: ['تعداد بازدید'],
+            //        barColors: ['#ff4a43']
+
+
+            //    });
+            //});
+
+        });
+    </script>
+
+
+}
