@@ -49,8 +49,8 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         public async Task AddUserToStatistic(string ip)
         {
             var httpContext = _httpContextAccessor.HttpContext;
-            var blockedIP =  blockedIpRepository.GetQuery().AsQueryable()
-                .Where(p => !p.IsDelete).ToList();
+            var blockedIP = await blockedIpRepository.GetQuery().AsQueryable()
+                .Where(p => !p.IsDelete).ToListAsync();
 
             if (!blockedIP.Any(ip => ip.IpAddress.Equals(GetIPAddress())))
             {
@@ -61,10 +61,42 @@ namespace WebSiteStatistics.Application.Services.Interfaces
                 statistic.Referer = httpContext.Request.Headers["Referer"].ToString() ?? "Direct";
                 statistic.UserAgent = httpContext.Request.Headers["User-Agent"].ToString();
                 statistic.DateStamp = DateTime.Now;
-          
+
                 await statisticsRepository.AddEntity(statistic);
                 await statisticsRepository.SaveChanges();
-                await GetLocation();
+
+                #region get location
+                var jsonDeserialize = await GetLocation();
+
+                var countries = await countryRepository.GetQuery().AsQueryable()
+                   .AnyAsync(c => c.CountryCode.Equals(jsonDeserialize.CountryCode));
+
+                if (countries)
+                {
+                    //then Update the ViewCount
+                    Country currentCountry = countryRepository.GetQuery()
+                        .First(cc => cc.CountryCode.Equals(jsonDeserialize.CountryCode));
+                    currentCountry.ViewCount++;
+                    await countryRepository.SaveChanges();
+                }
+                else
+                {
+                    //then add this Country To Database
+                    var newCountry = new Country()
+                    {
+                        CountryCode = jsonDeserialize.CountryCode,
+                        CountryName = jsonDeserialize.CountryName,
+                        Latitude = jsonDeserialize.Latitude,
+                        Longitude = jsonDeserialize.Longitude,
+                        City = jsonDeserialize.City,
+                        RegionName = jsonDeserialize.RegionName,
+                        RegionCode = jsonDeserialize.RegionCode,
+                        ViewCount = 1
+                    };
+                    await countryRepository.AddEntity(newCountry);
+                    await countryRepository.SaveChanges();
+                }
+                #endregion
 
                 #region Get Country Visitors
                 // Get Country Visitors
@@ -128,36 +160,7 @@ namespace WebSiteStatistics.Application.Services.Interfaces
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var jsonDeserialize =  JsonConvert.DeserializeObject<GeoInfo>(json);
-
-                var countries = countryRepository.GetQuery().AsQueryable()
-                    .Any(c => c.CountryCode.Equals(jsonDeserialize.CountryCode));
-
-                if (countries)
-                {
-                    //then Update the ViewCount
-                    Country currentCountry = countryRepository.GetQuery()
-                        .First(cc => cc.CountryCode.Equals(jsonDeserialize.CountryCode));
-                    currentCountry.ViewCount++;
-                    await countryRepository.SaveChanges();
-                }
-                else
-                {
-                    //then add this Country To Database
-                    var newCountry = new Country()
-                    {
-                        CountryCode = jsonDeserialize.CountryCode,
-                        CountryName = jsonDeserialize.CountryName,
-                        Latitude = jsonDeserialize.Latitude,
-                        Longitude = jsonDeserialize.Longitude,
-                        City = jsonDeserialize.City,
-                        RegionName = jsonDeserialize.RegionName,
-                        RegionCode = jsonDeserialize.RegionCode,
-                        ViewCount = 1
-                    };
-                    await countryRepository.AddEntity(newCountry);
-                    await countryRepository.SaveChanges();
-                }
+                var jsonDeserialize = JsonConvert.DeserializeObject<GeoInfo>(json);
                 return jsonDeserialize;
             }
             return null;
@@ -301,6 +304,18 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         }
         #endregion
 
+        #region  get Data for Request user Browser 
+        public async Task<RequestBrowserData[]> GetDataForRequestUserBrowser()
+        {
+            var results = await statisticsRepository.GetQuery()
+                .GroupBy(ua => new { ua.UserAgent })
+                .Select(g => new RequestBrowserData { Label = g.Key.UserAgent, Data = g.Count() })
+                .ToArrayAsync();
+
+            return results;
+        }
+        #endregion
+
         #region get OS detail for Table 
         public async Task<List<OsTableDTO>> GetOsTable()
         {
@@ -318,6 +333,21 @@ namespace WebSiteStatistics.Application.Services.Interfaces
                 .ToListAsync();
 
             return osDetails;
+        }
+        #endregion
+
+        #region  get Data for Request user Os 
+        public async Task<RequestOSData[]> GetDataForRequestUserOS()
+        {
+            var results = await statisticsRepository.GetQuery()
+                .GroupBy(ua => new { ua.UserOs })
+                .Select(g => new RequestOSData
+                {
+                    Label = g.Key.UserOs,
+                    Data = g.Count()
+                }).ToArrayAsync();
+
+            return results;
         }
         #endregion
 
@@ -410,6 +440,27 @@ namespace WebSiteStatistics.Application.Services.Interfaces
             })
             .ToListAsync();
             return blockedips;
+        }
+        #endregion
+
+
+        // Countries
+        #region get detail for Country Table
+        public async Task<List<Country>> GetCountryTable()
+        {
+            var countries = await countryRepository.GetQuery().ToListAsync();
+
+            return countries;
+
+        }
+        #endregion
+
+        #region get detail for City Table
+        public async Task<List<Country>> GetCityTable()
+        {
+            var countries = await countryRepository.GetQuery().ToListAsync();
+
+            return countries;
         }
         #endregion
 

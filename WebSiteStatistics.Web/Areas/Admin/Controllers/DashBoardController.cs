@@ -70,5 +70,45 @@ namespace WebSiteStatistics.Web.Areas.Admin.Controllers
         }
         #endregion
 
+        #region Country Table
+        public async Task<IActionResult> CountryTable()
+        {
+            var details = await statisticsService.GetCountryTable();
+            return View(details);
+        }
+        #endregion
+
+        #region City Table
+        public async Task<IActionResult> CityTable()
+        {
+            var details = await statisticsService.GetCityTable();
+            return View(details);
+        }
+        #endregion
+
+        #region Chart
+        public IActionResult Chart()
+        {
+            return View();
+        }
+        #endregion
+
+        #region Request For user Os Data 
+        [HttpGet]
+        public async Task<JsonResult> RequestUserOsData()
+        {
+            var results = await statisticsService.GetDataForRequestUserOS();
+            return Json(results);
+        }
+        #endregion
+
+        #region Request For user Browser Data 
+        [HttpGet]
+        public async Task<JsonResult> RequestUserBrowserData()
+        {
+            var results = await statisticsService.GetDataForRequestUserBrowser();
+            return Json(results);
+        }
+        #endregion
     }
 }

@@ -17,10 +17,10 @@ namespace WebSiteStatistics.Web.Controllers
         {
             this.statisticsService = statisticsService;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             string remoteIpAddress = HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
-            statisticsService.AddUserToStatistic(remoteIpAddress);
+            await statisticsService.AddUserToStatistic(remoteIpAddress);
             return View();
         }
     }

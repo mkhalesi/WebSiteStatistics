@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WebSiteStatistics.DataLayer.DTOs.Stattistics;
+using WebSiteStatistics.DataLayer.Entities.Statistics;
 
 namespace WebSiteStatistics.Application.Services.Interfaces
 {
@@ -30,8 +31,16 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         Task<List<BrowserTableDTO>> getBrowserTable();
         #endregion
 
+        #region  get Data for Request user Browser 
+        Task<RequestBrowserData[]> GetDataForRequestUserBrowser();
+        #endregion
+
         #region get OS detail for Table 
         Task<List<OsTableDTO>> GetOsTable();
+        #endregion
+
+        #region  get Data for Request user Os 
+        Task<RequestOSData[]> GetDataForRequestUserOS();
         #endregion
 
         #region get Referrer for Home
@@ -53,6 +62,17 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         #region get all BlockedIp
         Task<List<BlockedIpDTO>> GetAllBlockedIp();
         #endregion
+
+        // Countries
+        #region get detail for Country Table
+        Task<List<Country>> GetCountryTable();
+        #endregion
+
+        #region get detail for City Table
+        Task<List<Country>> GetCityTable();
+        #endregion
+
+  
 
     }
 }
