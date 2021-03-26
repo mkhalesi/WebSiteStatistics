@@ -19,8 +19,12 @@ namespace WebSiteStatistics.Web.Controllers
         }
         public async Task<IActionResult> Index()
         {
+            // Every Page You want Add To Stattistic Service , Write Two Line 
+            //==>>>
             string remoteIpAddress = HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
             await statisticsService.AddUserToStatistic(remoteIpAddress);
+            // <<< ===
+
             return View();
         }
     }

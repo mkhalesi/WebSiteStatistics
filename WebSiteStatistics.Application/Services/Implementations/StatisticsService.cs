@@ -152,11 +152,17 @@ namespace WebSiteStatistics.Application.Services.Interfaces
             }
         }
 
-        #region freeGeoip
+        #region Get Data From IpStack By IPAddress & Access_Key
         public async Task<GeoInfo> GetLocation()
         {
-            // GetIPAddress()
-            var response = await _httpClient.GetAsync("http://api.ipstack.com/" + "31.58.171.206" + "?access_key=74c3142e849d032aa8238f174421a424");
+            //  **IP** in localHost Doesn't respond for location, If Want See Results for Test => Change 'Get IP Address ()' with 'Your Ip Address'
+
+            // **Access_Key**
+            //  1) sign up the "http://api.ipstack.com/" website
+            //  2) Get Access_key in Your User Panel
+            //  3) then Change 'StatisticsService' File ==> 'GetLocation()' method with 'Access_key'
+
+            var response = await _httpClient.GetAsync("http://api.ipstack.com/" + GetIPAddress() + "?access_key=74c3142e849d032aa8238f174421a424");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
