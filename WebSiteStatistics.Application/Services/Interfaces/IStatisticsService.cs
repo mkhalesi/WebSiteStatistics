@@ -72,7 +72,9 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         Task<List<Country>> GetCityTable();
         #endregion
 
-  
+        #region Data for Request Country Visit
+        Task<RequestCountryData[]> GetDataForRequestCountry();
+        #endregion
 
     }
 }

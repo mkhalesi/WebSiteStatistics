@@ -52,7 +52,7 @@
 
             </div>
             <div class="box-content">
-                <div id="barCountry" style="height: 250px;"></div>
+                <canvas id="barCountry" style="max-height:600px;"></canvas>
             </div>
         </div>
     </div>
@@ -61,18 +61,12 @@
 </div>
 
 @section scripts {
-    <script src="~/WebStatistics/Scripts/morris/morris.js"></script>
-    <script src="~/WebStatistics/Scripts/raphael/raphael-min.js"></script>
-    <script src="~/WebStatistics/Scripts/jquery.signalR-2.2.1.js"></script>
-    <script src="~/WebStatistics/Scripts/modernizr-2.6.2.js"></script>
-    <script src="~/WebStatistics/Scripts/canvasjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
-
 
     <script>
         $(document).ready(function () {
 
-               // Initialize Pie Chart For USer Browser Data
+            // Initialize Pie Chart For USer Browser Data
             var databrowser = new Array();
             $.getJSON('/Admin/Dashboard/RequestUserBrowserData/', function (data) {
                 $.each(data, function (i, item) {
@@ -176,26 +170,56 @@
                 });
             });
 
-            // * Initialize Pie Chart
-            //var dataCountry = new Array();
-            //$.getJSON('/Home/RequestVisitorsCountryData/', function (data) {
-            //    $.each(data, function (i, item) {
-            //        dataCountry.push({ y: item.y, a: item.a });
-            //    });
-            //    Morris.Bar({
-            //        element: 'barCountry',
-            //        data: dataCountry,
-            //        xkey: 'y',
-            //        ykeys: ['a'],
-            //        labels: ['تعداد بازدید'],
-            //        barColors: ['#ff4a43']
-
-
-            //    });
-            //});
-
+            // * Initialize Pie Chart For Country Visitor Data
+            var dataCountries = new Array();
+            $.getJSON('/Admin/Dashboard/RequestVisitorsCountryData/', function (data) {
+                $.each(data, function (i, item) {
+                    dataCountries.push({ label: item.label, data: item.data });
+                });
+                var labelsBarArray = new Array();
+                var dataBarArray = new Array();
+                for (var i = 0; i < dataCountries.length; i++) {
+                    labelsBarArray.push(dataCountries[i].label);
+                    dataBarArray.push(dataCountries[i].data);
+                }
+                var ctxBar = document.getElementById('barCountry').getContext('2d');
+                var BarCountry = new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: labelsBarArray,
+                        datasets: [{
+                            label: '# of Votes',
+                            data: dataBarArray,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            });
         });
     </script>
-
-
 }

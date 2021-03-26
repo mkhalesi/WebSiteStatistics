@@ -464,6 +464,19 @@ namespace WebSiteStatistics.Application.Services.Interfaces
         }
         #endregion
 
+        #region Data for Request Country Visit
+        public async Task<RequestCountryData[]> GetDataForRequestCountry()
+        {
+            var countries = await countryRepository.GetQuery()
+                  .Select(c => new RequestCountryData
+                  { Label = c.CountryName, Data = c.ViewCount })
+                  .ToArrayAsync();
+
+            return countries;
+        }
+        #endregion
+
+
         #region Normalize Page Name
         private string NormalizePageName(string PageName)
         {

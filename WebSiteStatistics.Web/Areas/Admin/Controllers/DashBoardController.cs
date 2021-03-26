@@ -110,5 +110,14 @@ namespace WebSiteStatistics.Web.Areas.Admin.Controllers
             return Json(results);
         }
         #endregion
+
+        #region Request For Country visit Data
+        [HttpGet]
+        public async Task<JsonResult> RequestVisitorsCountryData()
+        {
+            var results = await statisticsService.GetDataForRequestCountry();
+            return Json(results);
+        }
+        #endregion
     }
 }
